@@ -4,6 +4,7 @@ var mongoose = restful.mongoose;
 
 // Schema
 var streetsSchema = new mongoose.Schema({
+    id: Number,
     usrn: Number,
     dft_no: String,
     roadname: String,
@@ -11,7 +12,7 @@ var streetsSchema = new mongoose.Schema({
     adoptive_status: String,
     open: Boolean,
     notes: String,
-    geometry: Object
+    geometry: Array
 });
 
 // Return Model
