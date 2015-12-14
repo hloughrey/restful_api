@@ -9,8 +9,8 @@ router.use(function(req, res, next){
 });
 
 // Models
-var Product = require('../models/products');
-var Streets = require('../models/streets');
+var Product = require('../../models/products');
+var Streets = require('../../models/streets');
 
 // Routes
 Product.methods(['get', 'put', 'post', 'delete']);

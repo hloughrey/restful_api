@@ -12,7 +12,8 @@ app.use(bodyParser.urlencoded({ extented: true }));
 app.use(bodyParser.json());
 
 // Routes
-app.use('/api', require('./routes/api'));
+app.use('/api/1', require('./routes/api/mongo'));
+app.use('/api/2', require('./routes/api/pgres'));
 
 //Start Server
 app.listen(3000);
