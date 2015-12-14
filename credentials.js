@@ -3,7 +3,7 @@ module.exports = {
     "user": "postgres:postgres",
     "host": "localhost",
     "port": 5432,
-    "database": "database"
+    "database": "dev"
   },
   "live": {
     "user": "postgres:postgres",
