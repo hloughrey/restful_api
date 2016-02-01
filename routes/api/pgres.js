@@ -21,22 +21,31 @@ router.use(function(req, res, next){
 
     pg.connect(conString, function (err, client, done) {
         var query,
-            filter,
-            bbox;
+            filter;
 
-        filter = url.parse(req.url, true).query,
-        bbox = filter.bbox;
+        filter = url.parse(req.url, true).query;
+        var ne_lng = filter.ne_lng,
+            ne_lat = filter.ne_lat,
+            sw_lng = filter.sw_lng,
+            sw_lat = filter.sw_lat;
 
         if (err) {
             return console.error('Error fetching client from pool', err);
         }
 
-        query = client.query("SELECT usrn, roadname, description, town, dft_no, adoption_status, street_type, open, notes, ST_AsGeoJSON(ST_Transform(geom, 4326)) AS geom FROM herefordshire.lsg lsg LIMIT 10");
-        var query = client.query("SELECT usrn, roadname, description, town, dft_no, adoption_status, street_type, open, notes, ST_AsGeoJSON(ST_Transform(geom, 4326)) AS geom FROM herefordshire.lsg lsg WHERE geom && ST_Transform(ST_GeometryFromText($1, 4326), 27700) AND ST_Intersects(geom, ST_Transform(ST_GeometryFromText($1, 4326), 27700))", [bbox]);
+        // var query = client.query("SELECT usrn, roadname, description, town, dft_no, adoption_status, street_type, open, notes, ST_AsGeoJSON(ST_Transform(geom, 4326)) AS geom FROM herefordshire.lsg lsg LIMIT 10");
+        var query = client.query("SELECT usrn, roadname, description, town, dft_no, adoption_status, "
+                                 + "street_type, open, notes, ST_AsGeoJSON(ST_Transform(geom, 4326)) AS geom "
+                                 + "FROM herefordshire.lsg lsg WHERE geom && ST_Transform(ST_MakeEnvelope($1, $2, $3, $4, 4326), 27700)", [ne_lng, ne_lat, sw_lng, sw_lat]);
 
-        query.on('row', function (row, result) {
-            var qResult = '{ "type": "Feature", "geometry":' + row.geom + ', "properties": { "usrn": "' + row.usrn + '", "roadname": "' + row.roadname + '", "description": "' + row.description + '", "town": "' + row.town + '", "adoption_status": "' + row.adoption_status + '", "street_type":"' + row.street_type + '", "open": "' + row.open + '", "notes": "' + row.notes + '"}}';
-            geoJsonResults.push(qResult);
+        query.on('row', function (row) {
+            var geojsonFeature = '{ "type": "Feature", "geometry":' + row.geom + ', '
+                                  + '"properties": { "usrn": "' + row.usrn + '", "roadname": "' + row.roadname + '", '
+                                  + '"description": "' + row.description + '", "town": "' + row.town + '", '
+                                  + '"adoption_status": "' + row.adoption_status + '", "street_type":"' + row.street_type + '", '
+                                  + '"open": "' + row.open + '", "notes": "' + row.notes
+                                  + '"}}';
+            geoJsonResults.push(geojsonFeature);
         });
 
       query.on('end', function(result){
